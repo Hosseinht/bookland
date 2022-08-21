@@ -20,6 +20,7 @@ class Book(models.Model):
     pages = models.PositiveSmallIntegerField()
     isbn = models.PositiveIntegerField()
     cover_image = models.ImageField(upload_to='books/images')
+    publish = models.BooleanField(default=True)
 
     def __str__(self):
         return self.title

@@ -22,6 +22,7 @@ class BookSerializer(serializers.ModelSerializer):
             "language",
             "pages",
             "isbn",
+            'publish',
             "cover_image",
         ]
 
