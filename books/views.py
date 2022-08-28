@@ -1,9 +1,10 @@
-from rest_framework.permissions import IsAdminUser
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.permissions import IsAdminUser, IsAuthenticatedOrReadOnly
 from rest_framework.viewsets import ModelViewSet
 
-
 from .models import Author, Book, Review
-from .serializers import AuthorSerializer, BookSerializer, ReviewSerializer
+from .permissions import IsReviewUserOrReadOnly
+from .serializers import AuthorSerializer, BookSerializer, BookDetailSerializer, ReviewSerializer, ReviewFixedSerializer
 
 
 class AuthorViewSet(ModelViewSet):
@@ -13,10 +14,24 @@ class AuthorViewSet(ModelViewSet):
 
 
 class BookViewSet(ModelViewSet):
-    queryset = Book.objects.all()
+    http_method_names = ["get", "post", "patch", "delete"]
+    queryset = Book.objects.prefetch_related('author').all()
     serializer_class = BookSerializer
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return BookSerializer
+        else:
+            return BookDetailSerializer
+            # parser_classes = [MultiPartParser, FormParser]
 
 
 class ReviewViewSet(ModelViewSet):
-    queryset = Review.objects.all()
     serializer_class = ReviewSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly, IsReviewUserOrReadOnly]
+
+    def get_queryset(self):
+        return Review.objects.filter(book_id=self.kwargs['book_pk'])
+
+    def get_serializer_context(self):
+        return {"book_id": self.kwargs['book_pk'], "user": self.request.user}

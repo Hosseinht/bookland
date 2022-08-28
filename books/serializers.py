@@ -1,3 +1,4 @@
+from django.db.models import Avg
 from rest_framework import serializers
 
 from .models import Author, Book, Review
@@ -9,7 +10,59 @@ class AuthorSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "pseudonym"]
 
 
+class ReviewFixedSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = ['average_rating']
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    reviewer = serializers.SerializerMethodField(read_only=True)
+    book = serializers.SlugRelatedField(slug_field='title', read_only=True)
+
+
+
+    #
+    # def get_average_rating(self, review):
+    #     book_id = self.context['book_id']
+    #     return Review.objects.filter(book_id=book_id).aggregate(average_rating=Avg('rating'))
+
+    def get_reviewer(self, review: Review):
+        return review.user.username
+
+    # average_rating = serializers.ReadOnlyField('average_rating')
+    def create(self, validated_data):
+        book_id = self.context['book_id']
+        user = self.context['user']
+
+        if Review.objects.filter(book_id=book_id, user=user):
+            raise serializers.ValidationError('You have already reviewed')
+        return Review.objects.create(book_id=book_id, user=user, **validated_data)
+
+    # def to_representation(self, instance: Review):
+    #     average_rating = instance.average_rating
+    #
+    #     representation = {
+    #         'average_rating': average_rating,
+    #         'id': instance.id
+    #     }
+    #     return representation
+
+    class Meta:
+        model = Review
+        fields = [
+            "id",
+            "book",
+            "reviewer",
+            "description",
+            'rating',
+            # 'average_rating'
+        ]
+
+
 class BookSerializer(serializers.ModelSerializer):
+    isbn = serializers.IntegerField()
+
     class Meta:
         model = Book
         fields = [
@@ -24,10 +77,30 @@ class BookSerializer(serializers.ModelSerializer):
             "isbn",
             'publish',
             "cover_image",
+            # 'average_rating',
         ]
 
+        # read_only_fields = ('average_rating',)
 
-class ReviewSerializer(serializers.ModelSerializer):
+
+class BookDetailSerializer(serializers.ModelSerializer):
+    reviews = ReviewSerializer(many=True, read_only=True)
+    isbn = serializers.IntegerField()
+
     class Meta:
-        model = Review
-        fields = ["id", "book", "user", "description", "date_added"]
+        model = Book
+        fields = [
+            "id",
+            "author",
+            "title",
+            "description",
+            "price",
+            "publisher",
+            "language",
+            "pages",
+            "isbn",
+            'publish',
+            "cover_image",
+            'reviews',
+        ]
+        # read_only_fields = ('average_rating',)

@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     # 3rd party apps
     'rest_framework',
     'djoser',
+    'django_summernote',
+    'corsheaders',
     "debug_toolbar",
 
     # local apps
@@ -52,8 +54,11 @@ INTERNAL_IPS = [
 
 ]
 
+CORS_ORIGIN_ALLOW_ALL = True
+
 MIDDLEWARE = [
     "debug_toolbar.middleware.DebugToolbarMiddleware",
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -129,6 +134,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'static'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -145,6 +151,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+
 }
 
 DJOSER = {
@@ -153,7 +160,7 @@ DJOSER = {
     # },
     'SERIALIZERS': {
         'user_create': 'users.serializers.UserCreateSerializer',
-        'current_user': 'users.serializers.UserSerializer',
+        'current_user': 'users.serializers.CurrentUserSerializer',
         'user': 'users.serializers.UserSerializer',
     }
 }
