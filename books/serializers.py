@@ -1,5 +1,6 @@
-from django.db.models import Avg
+from django.db.models import Avg, Subquery, Count
 from rest_framework import serializers
+from rest_framework.fields import IntegerField
 
 from .models import Author, Book, Review
 
@@ -20,17 +21,9 @@ class ReviewSerializer(serializers.ModelSerializer):
     reviewer = serializers.SerializerMethodField(read_only=True)
     book = serializers.SlugRelatedField(slug_field='title', read_only=True)
 
-
-
-    #
-    # def get_average_rating(self, review):
-    #     book_id = self.context['book_id']
-    #     return Review.objects.filter(book_id=book_id).aggregate(average_rating=Avg('rating'))
-
     def get_reviewer(self, review: Review):
         return review.user.username
 
-    # average_rating = serializers.ReadOnlyField('average_rating')
     def create(self, validated_data):
         book_id = self.context['book_id']
         user = self.context['user']
@@ -61,6 +54,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class BookSerializer(serializers.ModelSerializer):
+    average_rating = serializers.FloatField()
     isbn = serializers.IntegerField()
 
     class Meta:
@@ -77,10 +71,10 @@ class BookSerializer(serializers.ModelSerializer):
             "isbn",
             'publish',
             "cover_image",
-            # 'average_rating',
+            'average_rating',
         ]
 
-        # read_only_fields = ('average_rating',)
+    # read_only_fields = ('average_rating',)
 
 
 class BookDetailSerializer(serializers.ModelSerializer):
@@ -103,4 +97,3 @@ class BookDetailSerializer(serializers.ModelSerializer):
             "cover_image",
             'reviews',
         ]
-        # read_only_fields = ('average_rating',)

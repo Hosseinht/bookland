@@ -1,19 +1,13 @@
 from django.conf import settings
-from django.core.validators import MinLengthValidator, MaxLengthValidator
+from django.core.validators import MaxLengthValidator
 from django.db import models
-from django.db.models.aggregates import Avg
 
 from .validators import validate_isbn
 
 
-class BookManager(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().prefetch_related('reviews')
-
-
 class ReviewManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().select_related('user', 'book')
+        return super().get_queryset().select_related('user')
 
 
 class Author(models.Model):
@@ -33,17 +27,8 @@ class Book(models.Model):
     language = models.CharField(max_length=200)
     pages = models.PositiveSmallIntegerField()
     isbn = models.CharField(max_length=13, validators=[validate_isbn(), MaxLengthValidator(13)])
-    # isbn = models.DecimalField(max_digits=13, decimal_places=0)
     cover_image = models.ImageField(upload_to='books/images')
     publish = models.BooleanField(default=True)
-
-    @property
-    def average_rating(self):
-        avg_rating = Review.objects.select_related('book').filter(book_id=self.id).aggregate(Avg('rating'))
-
-        return str(avg_rating['rating__avg'])
-
-    objects = BookManager()
 
     def __str__(self):
         return self.title
@@ -65,12 +50,6 @@ class Review(models.Model):
     date_added = models.DateField(auto_now_add=True)
 
     objects = ReviewManager()
-
-    @property
-    def average_rating(self):
-        return Review.objects.filter(book_id=self.book.id).aggregate(
-            average_rating=Avg('rating'))
-
 
     def __str__(self):
         return f"{self.user.username} {self.book.title}"
