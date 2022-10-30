@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'djoser',
     'django_summernote',
+    'django_filters',
     'corsheaders',
     "debug_toolbar",
 
@@ -102,7 +103,6 @@ DATABASES = {
         'PORT': 5432
     }
 }
-
 
 # DATABASES = {
 #     'default': {

@@ -32,15 +32,6 @@ class ReviewSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('You have already reviewed')
         return Review.objects.create(book_id=book_id, user=user, **validated_data)
 
-    # def to_representation(self, instance: Review):
-    #     average_rating = instance.average_rating
-    #
-    #     representation = {
-    #         'average_rating': average_rating,
-    #         'id': instance.id
-    #     }
-    #     return representation
-
     class Meta:
         model = Review
         fields = [
@@ -49,13 +40,14 @@ class ReviewSerializer(serializers.ModelSerializer):
             "reviewer",
             "description",
             'rating',
-            # 'average_rating'
         ]
 
 
 class BookSerializer(serializers.ModelSerializer):
     average_rating = serializers.FloatField()
     isbn = serializers.IntegerField()
+    # author = AuthorSerializer(many=True)
+    author = serializers.SlugRelatedField(slug_field='name', many=True, queryset=Author.objects.all())
 
     class Meta:
         model = Book
