@@ -1,0 +1,31 @@
+version: "3.9"
+
+services:
+  api:
+    build: .
+    volumes:
+      - .:/django
+    image: django:bookland
+    container_name: django
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  db:
+    container_name: postgres
+    image: postgres:13.8
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: bookland_db
+
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres:/var/lib/postgresql/data/
+    restart: always
+
+volumes:
+  postgres:

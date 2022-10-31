@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     # 3rd party apps
     'rest_framework',
     'djoser',
-    'django_summernote',
     'django_filters',
     'corsheaders',
     "debug_toolbar",
@@ -96,13 +95,23 @@ WSGI_APPLICATION = 'bookland.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'booklan',
+        'NAME': 'bookland_db',
         'USER': 'postgres',
-        'PASSWORD': 'D!G!kala',
-        'HOST': 'localhost',
+        'PASSWORD': 'postgres',
+        'HOST': 'db',
         'PORT': 5432
     }
 }
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': 'booklan',
+#         'USER': 'postgres',
+#         'PASSWORD': 'D!G!kala',
+#         'HOST': 'localhost',
+#         'PORT': 5432
+#     }
+# }
 
 # DATABASES = {
 #     'default': {
