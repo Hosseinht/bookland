@@ -3,7 +3,7 @@ from rest_framework import serializers
 from .models import Author, Book, Category, Review
 
 
-class AuthorSerializer(serializers.ModelSerializer):
+class AuthorListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Author
         fields = ["id", "name", "pseudonym"]
@@ -69,13 +69,48 @@ class BookSerializer(serializers.ModelSerializer):
             "average_rating",
         ]
 
+        # read_only_fields = fields
+
+
+class BookAuthorSerializer(serializers.ModelSerializer):
+    category = serializers.SlugRelatedField(
+        slug_field="name", queryset=Category.objects.all()
+    )
+
+    class Meta:
+        model = Book
+        fields = [
+            "id",
+            "category",
+            "title",
+            "price",
+            "language",
+            "pages",
+            "cover_image",
+
+        ]
+
         read_only_fields = fields
+
+
+class AuthorDetailSerializer(serializers.ModelSerializer):
+    books = serializers.SerializerMethodField()
+
+    def get_books(self, obj):
+        author_pk = self.context["author_id"]
+        books = Book.objects.select_related('category').filter(author=author_pk)
+
+        return BookAuthorSerializer(books, many=True).data
+
+    class Meta:
+        model = Author
+        fields = ["id", "name", "pseudonym", "about", "books"]
 
 
 class BookCreateSerializer(serializers.ModelSerializer):
     isbn = serializers.IntegerField()
     author = serializers.SlugRelatedField(
-        slug_field="name", many=True, queryset=Author.objects.all()
+        slug_field="name", many=True, queryset=Author.objects.all(),
     )
     category = serializers.SlugRelatedField(
         slug_field="name", queryset=Category.objects.all()

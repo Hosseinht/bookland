@@ -1,29 +1,43 @@
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAdminUser, IsAuthenticatedOrReadOnly
 from rest_framework.viewsets import ModelViewSet
 
 from .filters import BookFilter
 from .models import Author, Book, Review, Category
-from .permissions import IsReviewUserOrReadOnly
-from .serializers import (AuthorSerializer, BookCreateSerializer,
+from .permissions import IsReviewUserOrReadOnly, IsAdminUserOrReadOnly
+from .serializers import (AuthorListSerializer, AuthorDetailSerializer, BookCreateSerializer,
                           BookDetailSerializer, BookSerializer,
                           ReviewSerializer, CategorySerializer)
 
 
 class AuthorViewSet(ModelViewSet):
     queryset = Author.objects.all()
-    serializer_class = AuthorSerializer
-    permission_classes = [IsAdminUser]
+    pagination_class = PageNumberPagination
+    permission_classes = [IsAdminUserOrReadOnly]
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ["name", "pseudonym"]
     ordering_fields = ["name"]
+
+    def get_serializer_context(self):
+        return {"author_id": self.kwargs.get('pk'), 'request': self.request}
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return AuthorListSerializer
+        else:
+            return AuthorDetailSerializer
 
 
 class CategoryViewSet(ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    permission_classes = [IsAdminUser]
+
+    def get_serializer_context(self):
+        return {"category_id": self.kwargs.get('pk')}
 
 
 class BookViewSet(ModelViewSet):

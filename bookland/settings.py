@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django_filters',
     'corsheaders',
     "debug_toolbar",
+    'django_cleanup.apps.CleanupConfig',
 
     # local apps
     'books',

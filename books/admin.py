@@ -17,10 +17,17 @@ class BookAdmin(admin.ModelAdmin):
         "id",
         "title",
         "authors",
+        "category",
         "price"
     ]
     list_display_links = ["id", "title"]
+    list_select_related = ['category']
     autocomplete_fields = ['author']
+
+    def get_queryset(self, request):
+        queryset = super(BookAdmin, self).get_queryset(request)
+        queryset = queryset.prefetch_related('author')
+        return queryset
 
     def authors(self, obj):
         return ", ".join([a.name for a in obj.author.all()])

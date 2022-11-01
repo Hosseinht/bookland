@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.core.validators import MaxLengthValidator
-from django.db import models
+from django.db import models, transaction
 
 from .validators import validate_isbn
 
@@ -13,6 +13,7 @@ class ReviewManager(models.Manager):
 class Author(models.Model):
     name = models.CharField(max_length=100)
     pseudonym = models.CharField(max_length=100, blank=True, null=True)
+    about = models.TextField(max_length=3000, null=True, blank=True)
 
     def __str__(self):
         return self.name
