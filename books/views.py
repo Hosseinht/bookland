@@ -50,6 +50,9 @@ class BookViewSet(ModelViewSet):
     search_fields = ["title", "description"]
     ordering_fields = ["name", "price", "pages"]
 
+    def get_serializer_context(self):
+        return {"book_id": self.kwargs["pk"], 'request': self.request}
+
     def get_serializer_class(self):
         if self.action == "list":
             return BookSerializer
