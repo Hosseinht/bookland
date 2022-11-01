@@ -18,8 +18,20 @@ class Author(models.Model):
         return self.name
 
 
+class Category(models.Model):
+    name = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = 'Category'
+        verbose_name_plural = 'Categories'
+
+
 class Book(models.Model):
     author = models.ManyToManyField(Author, related_name='books')
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
     title = models.CharField(max_length=200)
     description = models.TextField(max_length=3000)
     price = models.DecimalField(max_digits=6, decimal_places=2)

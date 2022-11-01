@@ -7,6 +7,7 @@ from . import views
 router = DefaultRouter()
 
 router.register('authors', views.AuthorViewSet)
+router.register('categories', views.CategoryViewSet, basename='categories')
 router.register('books', views.BookViewSet, basename='books')
 
 books_router = routers.NestedDefaultRouter(router, 'books', lookup='book')

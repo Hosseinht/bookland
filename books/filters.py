@@ -6,7 +6,8 @@ class BookFilter(FilterSet):
     class Meta:
         model = Book
         fields = {
-            'language': ['iexact'],
             'author__name': ['iexact'],
+            'language': ['iexact'],
             'price': ['exact'],
+            'category': ['exact']
         }
