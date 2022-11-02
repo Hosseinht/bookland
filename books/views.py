@@ -65,18 +65,20 @@ class ReviewViewSet(ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = [IsAuthenticatedOrReadOnly, IsReviewUserOrReadOnly]
 
+
     def get_queryset(self):
         return Review.objects.filter(book_id=self.kwargs["book_pk"])
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         avg = queryset.aggregate(average_rating=Avg('rating'))
-
-        serializer = ReviewSerializer(queryset, many=True)
-
-        return Response({'average_rating': avg['average_rating'], 'item': serializer.data})
-
-    #
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = ReviewSerializer(page, many=True)
+            return self.get_paginated_response({'average_rating': avg['average_rating'], 'item': serializer.data})
+        else:
+            serializer = ReviewSerializer(queryset, many=True)
+            return Response({'average_rating': avg['average_rating'], 'item': serializer.data})
 
     def get_serializer_context(self):
         return {"book_id": self.kwargs["book_pk"], "user": self.request.user}
