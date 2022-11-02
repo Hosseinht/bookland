@@ -1,6 +1,4 @@
 from rest_framework import serializers, pagination
-from rest_framework.pagination import PageNumberPagination
-from rest_framework.settings import api_settings
 
 from .models import Author, Book, Category, Review
 
@@ -21,11 +19,12 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
+    # average_rating = serializers.FloatField()
     reviewer = serializers.SerializerMethodField(read_only=True)
     book = serializers.SlugRelatedField(slug_field="title", read_only=True)
 
     def get_reviewer(self, review: Review):
-        return review.user.username
+        return str(review.user.username)
 
     def create(self, validated_data):
         book_id = self.context["book_id"]
@@ -40,6 +39,22 @@ class ReviewSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "book",
+            "reviewer",
+            "description",
+            "rating",
+            # "average_rating"
+        ]
+
+
+class SimpleReviewSerializer(serializers.ModelSerializer):
+    reviewer = serializers.SerializerMethodField(read_only=True)
+
+    def get_reviewer(self, review: Review):
+        return review.user.username
+
+    class Meta:
+        model = Review
+        fields = [
             "reviewer",
             "description",
             "rating",
@@ -71,7 +86,7 @@ class BookSerializer(serializers.ModelSerializer):
             "average_rating",
         ]
 
-        # read_only_fields = fields
+        read_only_fields = fields
 
 
 class BookAuthorSerializer(serializers.ModelSerializer):
@@ -164,8 +179,8 @@ class BookDetailSerializer(serializers.ModelSerializer):
 
     def get_reviews(self, obj):
         book_id = self.context["book_id"]
-        reviews = Review.objects.filter(book_id=book_id)
-        serializer = ReviewSerializer(reviews, many=True)
+        reviews = Review.objects.select_related('book', 'user').filter(book_id=book_id)
+        serializer = SimpleReviewSerializer(reviews, many=True)
         paginator = RelationPaginator()
         paginated_data = paginator.paginate_queryset(
             queryset=serializer.data, request=self.context['request'])

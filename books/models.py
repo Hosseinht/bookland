@@ -1,13 +1,10 @@
 from django.conf import settings
 from django.core.validators import MaxLengthValidator
-from django.db import models, transaction
+from django.db import models
 
+from .managers import ReviewManager,BookManager
 from .validators import validate_isbn
 
-
-class ReviewManager(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().select_related('user')
 
 
 class Author(models.Model):
@@ -43,6 +40,7 @@ class Book(models.Model):
     cover_image = models.ImageField(upload_to='books/images')
     publish = models.BooleanField(default=True)
 
+    objects = BookManager()
     def __str__(self):
         return self.title
 

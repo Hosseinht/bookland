@@ -3,6 +3,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAdminUser, IsAuthenticatedOrReadOnly
+from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from .filters import BookFilter
@@ -42,16 +43,14 @@ class CategoryViewSet(ModelViewSet):
 
 class BookViewSet(ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
-    queryset = Book.objects.select_related('category').prefetch_related("author").annotate(
-        average_rating=Avg("reviews__rating")
-    )
+    queryset = Book.objects.annotate(average_rating=Avg("reviews__rating"))
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = BookFilter
     search_fields = ["title", "description"]
     ordering_fields = ["name", "price", "pages"]
 
     def get_serializer_context(self):
-        return {"book_id": self.kwargs["pk"], 'request': self.request}
+        return {"book_id": self.kwargs.get("pk"), 'request': self.request}
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -68,6 +67,16 @@ class ReviewViewSet(ModelViewSet):
 
     def get_queryset(self):
         return Review.objects.filter(book_id=self.kwargs["book_pk"])
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        avg = queryset.aggregate(average_rating=Avg('rating'))
+
+        serializer = ReviewSerializer(queryset, many=True)
+
+        return Response({'average_rating': avg['average_rating'], 'item': serializer.data})
+
+    #
 
     def get_serializer_context(self):
         return {"book_id": self.kwargs["book_pk"], "user": self.request.user}
