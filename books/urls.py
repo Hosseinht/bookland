@@ -12,5 +12,5 @@ router.register('books', views.BookViewSet, basename='books')
 
 books_router = routers.NestedDefaultRouter(router, 'books', lookup='book')
 books_router.register('reviews', views.ReviewViewSet, basename='reviews')
-
+print(router.urls)
 urlpatterns = router.urls + books_router.urls

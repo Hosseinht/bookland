@@ -2,9 +2,8 @@ from django.conf import settings
 from django.core.validators import MaxLengthValidator
 from django.db import models
 
-from .managers import ReviewManager,BookManager
+from .managers import ReviewManager, BookManager
 from .validators import validate_isbn
-
 
 
 class Author(models.Model):
@@ -41,6 +40,7 @@ class Book(models.Model):
     publish = models.BooleanField(default=True)
 
     objects = BookManager()
+
     def __str__(self):
         return self.title
 
