@@ -1,5 +1,5 @@
 # bookland
 
-It's all about books:)
+bookland is loading.... :)
 
 

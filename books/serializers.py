@@ -1,6 +1,17 @@
 from rest_framework import serializers, pagination
 
 from .models import Author, Book, Category, Review
+from rest_framework.reverse import reverse
+
+
+class RelationPaginator(pagination.PageNumberPagination):
+    def get_paginated_response(self, data):
+        return {
+            'count': self.page.paginator.count,
+            'next': self.get_next_link(),
+            'previous': self.get_previous_link(),
+            'results': data
+        }
 
 
 class AuthorListSerializer(serializers.ModelSerializer):
@@ -46,21 +57,6 @@ class ReviewSerializer(serializers.ModelSerializer):
         ]
 
 
-class SimpleReviewSerializer(serializers.ModelSerializer):
-    reviewer = serializers.SerializerMethodField(read_only=True)
-
-    def get_reviewer(self, review: Review):
-        return review.user.username
-
-    class Meta:
-        model = Review
-        fields = [
-            "reviewer",
-            "description",
-            "rating",
-        ]
-
-
 class BookSerializer(serializers.ModelSerializer):
     average_rating = serializers.FloatField()
 
@@ -89,7 +85,11 @@ class BookSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
-class BookAuthorSerializer(serializers.ModelSerializer):
+class AuthorBookSerializer(serializers.ModelSerializer):
+    """
+        This serializer is used in AuthorDetailSerializer for displaying author's books
+
+    """
     category = serializers.SlugRelatedField(
         slug_field="name", queryset=Category.objects.all()
     )
@@ -110,23 +110,13 @@ class BookAuthorSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
-class RelationPaginator(pagination.PageNumberPagination):
-    def get_paginated_response(self, data):
-        return {
-            'count': self.page.paginator.count,
-            'next': self.get_next_link(),
-            'previous': self.get_previous_link(),
-            'results': data
-        }
-
-
 class AuthorDetailSerializer(serializers.ModelSerializer):
     books = serializers.SerializerMethodField()
 
     def get_books(self, obj):
         author_pk = self.context["author_id"]
         books = Book.objects.select_related('category').filter(author=author_pk)
-        serializer = BookAuthorSerializer(books, many=True)
+        serializer = AuthorBookSerializer(books, many=True)
         paginator = RelationPaginator()
         paginated_data = paginator.paginate_queryset(
             queryset=serializer.data, request=self.context['request'])
@@ -164,6 +154,24 @@ class BookCreateSerializer(serializers.ModelSerializer):
             "isbn",
             "publish",
             "cover_image",
+        ]
+
+
+class SimpleReviewSerializer(serializers.ModelSerializer):
+    """
+        This serializer is used in BookDetailSerializer for the review part
+    """
+    reviewer = serializers.SerializerMethodField(read_only=True)
+
+    def get_reviewer(self, review: Review):
+        return review.user.username
+
+    class Meta:
+        model = Review
+        fields = [
+            "reviewer",
+            "description",
+            "rating",
         ]
 
 
@@ -205,3 +213,17 @@ class BookDetailSerializer(serializers.ModelSerializer):
             "cover_image",
             "reviews",
         ]
+        read_only_fields = ["favorite"]
+
+    def __init__(self, *args, **kwargs):
+        """
+            /api/books/1/add_to_favorite/ is the endpoint for adding a book to the favorite list.
+            This logic here, hide all the fields at this endpoint.
+        """
+        super(BookDetailSerializer, self).__init__(*args, **kwargs)
+        pk = self.context['book_id']
+        book_url = reverse("books-detail", kwargs={'pk': pk})
+
+        if self.context['request'].get_full_path() == f"{book_url}add_to_favorite/":
+            for field in self.fields:
+                self.fields[field].read_only = True

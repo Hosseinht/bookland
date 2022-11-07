@@ -1,9 +1,13 @@
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAdminUser, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAdminUser, IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 from .filters import BookFilter
@@ -42,29 +46,51 @@ class CategoryViewSet(ModelViewSet):
 
 
 class BookViewSet(ModelViewSet):
-    http_method_names = ["get", "post", "patch", "delete"]
     queryset = Book.objects.annotate(average_rating=Avg("reviews__rating"))
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = BookFilter
     search_fields = ["title", "description"]
     ordering_fields = ["name", "price", "pages"]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_serializer_context(self):
-        return {"book_id": self.kwargs.get("pk"), 'request': self.request}
+
+        return {"book_id": self.kwargs.get("pk"), 'request': self.request,}
 
     def get_serializer_class(self):
         if self.action == "list":
             return BookSerializer
         elif self.action == "create":
             return BookCreateSerializer
+
         else:
             return BookDetailSerializer
+
+    @action(detail=True, methods=['put', 'get'], permission_classes=[IsAuthenticated])
+    def add_to_favorite(self, request, pk):
+        """
+            Add a book to a user's favorite list. actually add a user to the favorite field in Book model
+            The endpoint will be:
+            http://127.0.0.1:8000/api/books/1/add_to_favorite/
+            By hitting this endpoint user will be added to the favorite field in Book model
+        """
+        bad_request_message = 'An error has occurred'
+
+        book = get_object_or_404(Book, pk=pk)
+        user = self.request.user
+        if user.is_authenticated and user not in book.favorite.all():
+            book.favorite.add(user)
+            return Response({'detail': 'Added to favorite list'}, status=status.HTTP_200_OK)
+        elif user.is_authenticated and user in book.favorite.all():
+            book.favorite.remove(user)
+            return Response({'detail': 'Removed from favorite list'}, status=status.HTTP_200_OK)
+        else:
+            Response({'detail': bad_request_message}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ReviewViewSet(ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = [IsAuthenticatedOrReadOnly, IsReviewUserOrReadOnly]
-
 
     def get_queryset(self):
         return Review.objects.filter(book_id=self.kwargs["book_pk"])
@@ -82,3 +108,25 @@ class ReviewViewSet(ModelViewSet):
 
     def get_serializer_context(self):
         return {"book_id": self.kwargs["book_pk"], "user": self.request.user}
+
+# class BookFavoriteViewSet(APIView):
+#       """
+#           another approach to add a book to favorite list
+#           urlpatterns = [
+#                   path('books/<int:pk>/favorite/', views.BookFavoriteViewSet.as_view()),
+#               ]
+#       """
+#
+#     bad_request_message = 'An error has occurred'
+#
+#     def post(self, request, pk):
+#         book = get_object_or_404(Book, pk=pk)
+#         user = request.user
+#         if user not in book.favorite.all():
+#             book.favorite.add(user)
+#             return Response({'detail': 'Added to favorite list'}, status=status.HTTP_200_OK)
+#         elif user in book.favorite.all():
+#             book.favorite.remove(user)
+#             return Response({'detail': 'Removed from favorite list'}, status=status.HTTP_200_OK)
+#         else:
+#             Response({'detail': self.bad_request_message}, status=status.HTTP_400_BAD_REQUEST)

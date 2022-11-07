@@ -38,6 +38,7 @@ class Book(models.Model):
     isbn = models.CharField(max_length=13, validators=[validate_isbn(), MaxLengthValidator(13)])
     cover_image = models.ImageField(upload_to='books/images')
     publish = models.BooleanField(default=True)
+    favorite = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='book_favorite', blank=True)
 
     objects = BookManager()
 
