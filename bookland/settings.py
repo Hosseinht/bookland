@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     # local apps
     'books',
     'users',
+    'profiles',
 ]
 
 INTERNAL_IPS = [

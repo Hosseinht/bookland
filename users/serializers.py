@@ -26,8 +26,6 @@ class CurrentUserSerializer(BaseUserSerializer):
             "email",
             "first_name",
             "last_name",
-            "date_joined",
-            "last_login",
         ]
 
 

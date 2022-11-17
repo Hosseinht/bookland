@@ -55,7 +55,7 @@ class BookViewSet(ModelViewSet):
 
     def get_serializer_context(self):
 
-        return {"book_id": self.kwargs.get("pk"), 'request': self.request,}
+        return {"book_id": self.kwargs.get("pk"), 'request': self.request}
 
     def get_serializer_class(self):
         if self.action == "list":
