@@ -1,3 +1,4 @@
+from django.db import transaction
 from rest_framework import serializers
 
 from users.serializers import CurrentUserSerializer
@@ -10,18 +11,15 @@ class ProfileSerializer(serializers.ModelSerializer):
     last_name = serializers.CharField(source='user.last_name')
 
     def update(self, instance, validated_data):
-        user_data = validated_data.pop('user')
-        user = instance.user
+        with transaction.atomic():
+            user_data = validated_data.pop('user')
+            user = instance.user
 
-        user_ser = CurrentUserSerializer(instance=user, data=user_data)
-        if user_ser.is_valid():
-            user_ser.save()
+            user_ser = CurrentUserSerializer(instance=user, data=user_data)
+            if user_ser.is_valid():
+                user_ser.save()
 
-        instance.phone = validated_data.get('phone', instance.phone)
-        instance.birth_date = validated_data.get('birth_date', instance.birth_date)
-        instance.about = validated_data.get('about', instance.about)
-        instance.save()
-        return super().update(instance, validated_data)
+            return super().update(instance, validated_data)
 
     class Meta:
         model = Profile

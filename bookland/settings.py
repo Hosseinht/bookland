@@ -180,9 +180,9 @@ REST_FRAMEWORK = {
 }
 
 DJOSER = {
-    # 'PERMISSIONS': {
-    #     'user_create': ['rest_framework.permissions.IsAdminUser'],
-    # },
+    'PERMISSIONS': {
+        'user_create': ['users.permissions.IsAdminUserOrAnonymous'],
+    },
     'SERIALIZERS': {
         'user_create': 'users.serializers.UserCreateSerializer',
         'current_user': 'users.serializers.CurrentUserSerializer',

@@ -31,7 +31,6 @@ class CurrentUserSerializer(BaseUserSerializer):
 
 class UserCreateSerializer(BaseUserCreateSerializer):
 
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         user = self.context["user"]
