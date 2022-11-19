@@ -3,6 +3,8 @@ from django.core.validators import RegexValidator
 from django.db import models
 from django.conf import settings
 
+from .managers import ProfileManager
+
 
 class Profile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -12,6 +14,8 @@ class Profile(models.Model):
     phone = models.CharField(max_length=13, validators=[phone_regex], unique=True, null=True, blank=True)
     birth_date = models.DateField(blank=True, null=True)
     about = models.TextField(max_length=2000, blank=True)
+
+    objects = ProfileManager()
 
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name}"

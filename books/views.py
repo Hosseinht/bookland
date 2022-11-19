@@ -66,26 +66,26 @@ class BookViewSet(ModelViewSet):
         else:
             return BookDetailSerializer
 
-    @action(detail=True, methods=['put', 'get'], permission_classes=[IsAuthenticated])
-    def add_to_favorite(self, request, pk):
-        """
-            Add a book to a user's favorite list. actually add a user to the favorite field in Book model
-            The endpoint will be:
-            http://127.0.0.1:8000/api/books/1/add_to_favorite/
-            By hitting this endpoint user will be added to the favorite field in Book model
-        """
-        bad_request_message = 'An error has occurred'
-
-        book = get_object_or_404(Book, pk=pk)
-        user = self.request.user
-        if user.is_authenticated and user not in book.favorite.all():
-            book.favorite.add(user)
-            return Response({'detail': 'Added to favorite list'}, status=status.HTTP_200_OK)
-        elif user.is_authenticated and user in book.favorite.all():
-            book.favorite.remove(user)
-            return Response({'detail': 'Removed from favorite list'}, status=status.HTTP_200_OK)
-        else:
-            Response({'detail': bad_request_message}, status=status.HTTP_400_BAD_REQUEST)
+    # @action(detail=True, methods=['put', 'get'], permission_classes=[IsAuthenticated])
+    # def add_to_favorite(self, request, pk):
+    #     """
+    #         Add a book to a user's favorite list. actually add a user to the favorite field in Book model
+    #         The endpoint will be:
+    #         http://127.0.0.1:8000/api/books/1/add_to_favorite/
+    #         By hitting this endpoint user will be added to the favorite field in Book model
+    #     """
+    #     bad_request_message = 'An error has occurred'
+    #
+    #     book = get_object_or_404(Book, pk=pk)
+    #     user = self.request.user
+    #     if user.is_authenticated and user not in book.favorite.all():
+    #         book.favorite.add(user)
+    #         return Response({'detail': 'Added to favorite list'}, status=status.HTTP_200_OK)
+    #     elif user.is_authenticated and user in book.favorite.all():
+    #         book.favorite.remove(user)
+    #         return Response({'detail': 'Removed from favorite list'}, status=status.HTTP_200_OK)
+    #     else:
+    #         Response({'detail': bad_request_message}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ReviewViewSet(ModelViewSet):

@@ -5,6 +5,7 @@ from django.urls import path, include
 
 from rest_framework import routers
 
+
 from books.urls import router as books_router
 from profiles.urls import router as profiles_router
 
@@ -14,8 +15,8 @@ router.registry.extend(profiles_router.registry)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/v1/', include(router.urls)),
-    # path('api/', include('books.urls')),
+    # path('api/v1/', include(router.urls)),
+    path('api/v1/', include('books.urls')),
 
     path('api/auth/', include('users.urls')),
     path('api/auth/', include('djoser.urls.jwt')),

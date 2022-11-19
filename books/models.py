@@ -24,6 +24,7 @@ class Category(models.Model):
     class Meta:
         verbose_name = 'Category'
         verbose_name_plural = 'Categories'
+        ordering = ['id']
 
 
 class Book(models.Model):
@@ -38,12 +39,15 @@ class Book(models.Model):
     isbn = models.CharField(max_length=13, validators=[validate_isbn(), MaxLengthValidator(13)])
     cover_image = models.ImageField(upload_to='books/images')
     publish = models.BooleanField(default=True)
-    favorite = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='book_favorite', blank=True)
+    favorite = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='favorite_books', blank=True)
 
     objects = BookManager()
 
     def __str__(self):
         return self.title
+
+    class Meta:
+        ordering = ['id']
 
 
 class Review(models.Model):
@@ -65,3 +69,6 @@ class Review(models.Model):
 
     def __str__(self):
         return f"{self.user.username} {self.book.title}"
+
+    class Meta:
+        ordering = ['id']

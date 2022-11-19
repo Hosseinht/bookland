@@ -178,6 +178,7 @@ class SimpleReviewSerializer(serializers.ModelSerializer):
 class BookDetailSerializer(serializers.ModelSerializer):
     reviews = serializers.SerializerMethodField(read_only=True)
     isbn = serializers.IntegerField()
+
     author = serializers.SlugRelatedField(
         slug_field="name", many=True, queryset=Author.objects.all()
     )
