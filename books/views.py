@@ -5,17 +5,27 @@ from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAdminUser, IsAuthenticatedOrReadOnly, IsAuthenticated
+from rest_framework.permissions import (
+    IsAdminUser,
+    IsAuthenticatedOrReadOnly,
+    IsAuthenticated,
+)
 from rest_framework.response import Response
-from rest_framework.views import APIView
+
 from rest_framework.viewsets import ModelViewSet
 
 from .filters import BookFilter
 from .models import Author, Book, Review, Category
 from .permissions import IsReviewUserOrReadOnly, IsAdminUserOrReadOnly
-from .serializers import (AuthorListSerializer, AuthorDetailSerializer, BookCreateSerializer,
-                          BookDetailSerializer, BookSerializer,
-                          ReviewSerializer, CategorySerializer)
+from .serializers import (
+    AuthorListSerializer,
+    AuthorDetailSerializer,
+    BookCreateSerializer,
+    BookDetailSerializer,
+    BookSerializer,
+    ReviewSerializer,
+    CategorySerializer,
+)
 
 
 class AuthorViewSet(ModelViewSet):
@@ -27,7 +37,7 @@ class AuthorViewSet(ModelViewSet):
     ordering_fields = ["name"]
 
     def get_serializer_context(self):
-        return {"author_id": self.kwargs.get('pk'), 'request': self.request}
+        return {"author_id": self.kwargs.get("pk"), "request": self.request}
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -42,7 +52,7 @@ class CategoryViewSet(ModelViewSet):
     permission_classes = [IsAdminUser]
 
     def get_serializer_context(self):
-        return {"category_id": self.kwargs.get('pk')}
+        return {"category_id": self.kwargs.get("pk")}
 
 
 class BookViewSet(ModelViewSet):
@@ -51,11 +61,11 @@ class BookViewSet(ModelViewSet):
     filterset_class = BookFilter
     search_fields = ["title", "description"]
     ordering_fields = ["name", "price", "pages"]
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminUserOrReadOnly]
 
     def get_serializer_context(self):
 
-        return {"book_id": self.kwargs.get("pk"), 'request': self.request}
+        return {"book_id": self.kwargs.get("pk"), "request": self.request}
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -66,26 +76,32 @@ class BookViewSet(ModelViewSet):
         else:
             return BookDetailSerializer
 
-    # @action(detail=True, methods=['put', 'get'], permission_classes=[IsAuthenticated])
-    # def add_to_favorite(self, request, pk):
-    #     """
-    #         Add a book to a user's favorite list. actually add a user to the favorite field in Book model
-    #         The endpoint will be:
-    #         http://127.0.0.1:8000/api/books/1/add_to_favorite/
-    #         By hitting this endpoint user will be added to the favorite field in Book model
-    #     """
-    #     bad_request_message = 'An error has occurred'
-    #
-    #     book = get_object_or_404(Book, pk=pk)
-    #     user = self.request.user
-    #     if user.is_authenticated and user not in book.favorite.all():
-    #         book.favorite.add(user)
-    #         return Response({'detail': 'Added to favorite list'}, status=status.HTTP_200_OK)
-    #     elif user.is_authenticated and user in book.favorite.all():
-    #         book.favorite.remove(user)
-    #         return Response({'detail': 'Removed from favorite list'}, status=status.HTTP_200_OK)
-    #     else:
-    #         Response({'detail': bad_request_message}, status=status.HTTP_400_BAD_REQUEST)
+    @action(detail=True, methods=["put", "get"], permission_classes=[IsAuthenticated])
+    def add_to_favorite(self, request, pk):
+        """
+        Add a book to a user's favorite list. actually add a user to the favorite field in Book model
+        The endpoint will be:
+        http://127.0.0.1:8000/api/books/1/add_to_favorite/
+        By hitting this endpoint user will be added to the favorite field in Book model
+        """
+        bad_request_message = "An error has occurred"
+
+        book = get_object_or_404(Book, pk=pk)
+        user = self.request.user
+        if user.is_authenticated and user not in book.favorite.all():
+            book.favorite.add(user)
+            return Response(
+                {"detail": "Added to favorite list"}, status=status.HTTP_200_OK
+            )
+        elif user.is_authenticated and user in book.favorite.all():
+            book.favorite.remove(user)
+            return Response(
+                {"detail": "Removed from favorite list"}, status=status.HTTP_200_OK
+            )
+        else:
+            Response(
+                {"detail": bad_request_message}, status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class ReviewViewSet(ModelViewSet):
@@ -97,17 +113,22 @@ class ReviewViewSet(ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-        avg = queryset.aggregate(average_rating=Avg('rating'))
+        avg = queryset.aggregate(average_rating=Avg("rating"))
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = ReviewSerializer(page, many=True)
-            return self.get_paginated_response({'average_rating': avg['average_rating'], 'item': serializer.data})
+            return self.get_paginated_response(
+                {"average_rating": avg["average_rating"], "item": serializer.data}
+            )
         else:
             serializer = ReviewSerializer(queryset, many=True)
-            return Response({'average_rating': avg['average_rating'], 'item': serializer.data})
+            return Response(
+                {"average_rating": avg["average_rating"], "item": serializer.data}
+            )
 
     def get_serializer_context(self):
         return {"book_id": self.kwargs["book_pk"], "user": self.request.user}
+
 
 # class BookFavoriteViewSet(APIView):
 #       """

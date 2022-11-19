@@ -1,12 +1,11 @@
-from django.db.models import QuerySet, Subquery, F
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from django.contrib.auth import get_user_model
-from books.models import Book
+
 from .models import Profile
 from .serializers import ProfileSerializer, ProfileDetailSerializer
+from django.contrib.auth import get_user_model
 from .permissions import CurrentUserOrAdmin
 
 User = get_user_model()
@@ -18,6 +17,9 @@ class ProfileViewSet(ModelViewSet):
     serializer_class = ProfileSerializer
     permission_classes = [CurrentUserOrAdmin]
 
+    def get_serializer_context(self):
+        return {'request': self.request}
+
     def get_queryset(self):
         user = self.request.user
         queryset = super().get_queryset()
@@ -27,12 +29,12 @@ class ProfileViewSet(ModelViewSet):
 
     @action(detail=False, methods=["GET", "PUT"], permission_classes=[IsAuthenticated])
     def me(self, request, *args, **kwargs):
-        # context = {'books': Book.objects.filter(favorite=request.user.id)}
+        context = {'request': request}
 
         profile = Profile.objects.get(user_id=request.user.id)
 
         if request.method == "GET":
-            serializer = ProfileDetailSerializer(profile)
+            serializer = ProfileDetailSerializer(profile, context=context)
             return Response(serializer.data)
         elif request.method == "PUT":
             serializer = ProfileSerializer(profile, request.data, partial=True)

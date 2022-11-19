@@ -5,12 +5,14 @@ from rest_framework.reverse import reverse
 
 
 class RelationPaginator(pagination.PageNumberPagination):
+    """For nested serializer pagination"""
+
     def get_paginated_response(self, data):
         return {
-            'count': self.page.paginator.count,
-            'next': self.get_next_link(),
-            'previous': self.get_previous_link(),
-            'results': data
+            "count": self.page.paginator.count,
+            "next": self.get_next_link(),
+            "previous": self.get_previous_link(),
+            "results": data,
         }
 
 
@@ -20,13 +22,56 @@ class AuthorListSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "pseudonym"]
 
 
+class AuthorBookSerializer(serializers.ModelSerializer):
+    """
+    This serializer is used in AuthorDetailSerializer for displaying author's books
+
+    """
+
+    category = serializers.SlugRelatedField(
+        slug_field="name", queryset=Category.objects.all()
+    )
+
+    class Meta:
+        model = Book
+        fields = [
+            "id",
+            "category",
+            "title",
+            "price",
+            "language",
+            "pages",
+            "cover_image",
+        ]
+
+        read_only_fields = fields
+
+
+class AuthorDetailSerializer(serializers.ModelSerializer):
+    books = serializers.SerializerMethodField()
+
+    def get_books(self, obj):
+        author_pk = self.context["author_id"]
+        books = Book.objects.select_related("category").filter(author=author_pk)
+        serializer = AuthorBookSerializer(books, many=True)
+        paginator = RelationPaginator()
+        paginated_data = paginator.paginate_queryset(
+            queryset=serializer.data, request=self.context["request"]
+        )
+
+        result = paginator.get_paginated_response(paginated_data)
+
+        return result
+
+    class Meta:
+        model = Author
+        fields = ["id", "name", "pseudonym", "about", "books"]
+
+
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = [
-            "id",
-            "name"
-        ]
+        fields = ["id", "name"]
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -85,55 +130,12 @@ class BookSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
-class AuthorBookSerializer(serializers.ModelSerializer):
-    """
-        This serializer is used in AuthorDetailSerializer for displaying author's books
-
-    """
-    category = serializers.SlugRelatedField(
-        slug_field="name", queryset=Category.objects.all()
-    )
-
-    class Meta:
-        model = Book
-        fields = [
-            "id",
-            "category",
-            "title",
-            "price",
-            "language",
-            "pages",
-            "cover_image",
-
-        ]
-
-        read_only_fields = fields
-
-
-class AuthorDetailSerializer(serializers.ModelSerializer):
-    books = serializers.SerializerMethodField()
-
-    def get_books(self, obj):
-        author_pk = self.context["author_id"]
-        books = Book.objects.select_related('category').filter(author=author_pk)
-        serializer = AuthorBookSerializer(books, many=True)
-        paginator = RelationPaginator()
-        paginated_data = paginator.paginate_queryset(
-            queryset=serializer.data, request=self.context['request'])
-
-        result = paginator.get_paginated_response(paginated_data)
-
-        return result
-
-    class Meta:
-        model = Author
-        fields = ["id", "name", "pseudonym", "about", "books"]
-
-
 class BookCreateSerializer(serializers.ModelSerializer):
     isbn = serializers.IntegerField()
     author = serializers.SlugRelatedField(
-        slug_field="name", many=True, queryset=Author.objects.all(),
+        slug_field="name",
+        many=True,
+        queryset=Author.objects.all(),
     )
     category = serializers.SlugRelatedField(
         slug_field="name", queryset=Category.objects.all()
@@ -159,8 +161,9 @@ class BookCreateSerializer(serializers.ModelSerializer):
 
 class SimpleReviewSerializer(serializers.ModelSerializer):
     """
-        This serializer is used in BookDetailSerializer for the review part
+    This serializer is used in BookDetailSerializer for the review part
     """
+
     reviewer = serializers.SerializerMethodField(read_only=True)
 
     def get_reviewer(self, review: Review):
@@ -188,11 +191,12 @@ class BookDetailSerializer(serializers.ModelSerializer):
 
     def get_reviews(self, obj):
         book_id = self.context["book_id"]
-        reviews = Review.objects.select_related('book', 'user').filter(book_id=book_id)
+        reviews = Review.objects.select_related("book", "user").filter(book_id=book_id)
         serializer = SimpleReviewSerializer(reviews, many=True)
         paginator = RelationPaginator()
         paginated_data = paginator.paginate_queryset(
-            queryset=serializer.data, request=self.context['request'])
+            queryset=serializer.data, request=self.context["request"]
+        )
 
         result = paginator.get_paginated_response(paginated_data)
 
@@ -218,13 +222,13 @@ class BookDetailSerializer(serializers.ModelSerializer):
 
     def __init__(self, *args, **kwargs):
         """
-            /api/books/1/add_to_favorite/ is the endpoint for adding a book to the favorite list.
-            This logic here, hide all the fields at this endpoint.
+        /api/books/1/add_to_favorite/ is the endpoint for adding a book to the favorite list.
+        This logic here, hide all the fields at this endpoint.
         """
         super(BookDetailSerializer, self).__init__(*args, **kwargs)
-        pk = self.context['book_id']
-        book_url = reverse("books-detail", kwargs={'pk': pk})
+        pk = self.context["book_id"]
+        book_url = reverse("books-detail", kwargs={"pk": pk})
 
-        if self.context['request'].get_full_path() == f"{book_url}add_to_favorite/":
+        if self.context["request"].get_full_path() == f"{book_url}add_to_favorite/":
             for field in self.fields:
                 self.fields[field].read_only = True
