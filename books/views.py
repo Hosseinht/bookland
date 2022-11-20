@@ -29,7 +29,7 @@ from .serializers import (
 
 
 class AuthorViewSet(ModelViewSet):
-    queryset = Author.objects.all()
+    queryset = Author.objects.all().order_by('id')
     pagination_class = PageNumberPagination
     permission_classes = [IsAdminUserOrReadOnly]
     filter_backends = [SearchFilter, OrderingFilter]
@@ -47,7 +47,7 @@ class AuthorViewSet(ModelViewSet):
 
 
 class CategoryViewSet(ModelViewSet):
-    queryset = Category.objects.all()
+    queryset = Category.objects.all().order_by('id')
     serializer_class = CategorySerializer
     permission_classes = [IsAdminUser]
 
@@ -56,7 +56,7 @@ class CategoryViewSet(ModelViewSet):
 
 
 class BookViewSet(ModelViewSet):
-    queryset = Book.objects.annotate(average_rating=Avg("reviews__rating"))
+    queryset = Book.objects.annotate(average_rating=Avg("reviews__rating")).order_by('-add_date')
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = BookFilter
     search_fields = ["title", "description"]

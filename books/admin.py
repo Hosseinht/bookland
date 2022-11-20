@@ -13,16 +13,52 @@ class AuthorAdmin(admin.ModelAdmin):
 
 
 class BookAdmin(admin.ModelAdmin):
+    fieldsets = (
+        (
+            "Author",
+            {
+                "fields": (
+                    "author",
+                )
+            },
+        ),
+        (
+            "Category",
+            {
+                "fields": (
+                    "category",
+                )
+            },
+        ),
+        (
+            "Book Info",
+            {
+                "fields": (
+                    "title",
+                    "description",
+                    "price",
+                    "publisher",
+                    "language",
+                    "pages",
+                    "isbn",
+                    "cover_image",
+                )
+            },
+        ),
+        ("Dates", {"fields": ("add_date", "update")}),
+    )
     list_display = [
         "id",
         "title",
         "authors",
         "category",
-        "price"
+        "price",
+
     ]
     list_display_links = ["id", "title"]
     list_select_related = ['category']
     autocomplete_fields = ['author']
+    readonly_fields = ['add_date','update']
 
     def get_queryset(self, request):
         queryset = super(BookAdmin, self).get_queryset(request)
