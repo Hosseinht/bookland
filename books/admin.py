@@ -45,7 +45,7 @@ class BookAdmin(admin.ModelAdmin):
                 )
             },
         ),
-        ("Dates", {"fields": ("add_date", "update")}),
+        ("Dates", {"fields": ('created_at','updated_at')}),
     )
     list_display = [
         "id",
@@ -58,7 +58,7 @@ class BookAdmin(admin.ModelAdmin):
     list_display_links = ["id", "title"]
     list_select_related = ['category']
     autocomplete_fields = ['author']
-    readonly_fields = ['add_date','update']
+    readonly_fields = ['created_at','updated_at']
 
     def get_queryset(self, request):
         queryset = super(BookAdmin, self).get_queryset(request)

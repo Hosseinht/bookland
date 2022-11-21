@@ -56,7 +56,7 @@ class CategoryViewSet(ModelViewSet):
 
 
 class BookViewSet(ModelViewSet):
-    queryset = Book.objects.annotate(average_rating=Avg("reviews__rating")).order_by('-add_date')
+    queryset = Book.objects.annotate(average_rating=Avg("reviews__rating")).order_by('-created_at')
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = BookFilter
     search_fields = ["title", "description"]

@@ -39,8 +39,8 @@ class Book(models.Model):
     cover_image = models.ImageField(upload_to='books/images')
     publish = models.BooleanField(default=True)
     favorite = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='favorite_books', blank=True)
-    add_date = models.DateTimeField(auto_now_add=True)
-    update = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     objects = BookManager()
 
@@ -61,8 +61,8 @@ class Review(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     description = models.TextField()
     rating = models.PositiveSmallIntegerField(choices=RATING, default=5)
-    add_date = models.DateTimeField(auto_now_add=True)
-    update = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at= models.DateTimeField(auto_now=True)
 
     objects = ReviewManager()
 
