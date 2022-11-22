@@ -8,14 +8,15 @@ from rest_framework.reverse import reverse
 
 book_url = reverse("books-list")
 
-TEST_DIR = "books/tests/test_data/media/"
+# TEST_DIR = "books/tests/test_data/media/"
 # For Docker and linux
 
-WIN_TEST_DIR = "test_data/media/"
+# WIN_TEST_DIR = "books/tests/test_data/media/"
 # For windows
 
 path = settings.BASE_DIR
 file_path = os.path.join(path, "books/tests/test_data/media/books/images/")
+TEST_DIR = os.path.join(path, "books/tests/test_data/media/")
 
 
 @pytest.mark.django_db()
@@ -32,41 +33,25 @@ class TestCreateBook:
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
-    # @override_settings(MEDIA_ROOT=(TEST_DIR + "/media"))
     def test_admin_can_create_book_return_200(
             self, settings, api_client, admin_user, create_book, book_payload
     ):
-        settings.MEDIA_ROOT = WIN_TEST_DIR
-        # in windows
-
-        # settings.MEDIA_ROOT = TEST_DIR
-        # in docker and linux
+        settings.MEDIA_ROOT = TEST_DIR
 
         response = api_client.post(book_url, book_payload)
-        print(book_payload["author"])
 
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["id"] > 0
 
-        # delete test image after the test is done
         shutil.rmtree(file_path)
-        # if using windows
 
-        # shutil.rmtree('books/tests/test_data/media/books/images/')
-        # if using docker or linux
-
-    # @override_settings(MEDIA_ROOT=(TEST_DIR + "/media"))
     def test_data_is_invalid_return_400(
             self, settings, api_client, admin_user, invalid_book_payload
     ):
-        settings.MEDIA_ROOT = WIN_TEST_DIR
-        # in windows
-
-        # settings.MEDIA_ROOT = TEST_DIR
-        # in docker and linux
+        settings.MEDIA_ROOT = TEST_DIR
 
         response = api_client.post(book_url, invalid_book_payload)
-        print(response.data)
+
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.data["title"] is not None
 
@@ -160,11 +145,7 @@ class TestUpdateBook:
     def test_admin_user_can_update_book_return_200(
             self, settings, api_client, admin_user, create_book, create_author, book_payload
     ):
-        settings.MEDIA_ROOT = WIN_TEST_DIR
-        # in windows
-
-        # settings.MEDIA_ROOT = TEST_DIR
-        # in docker and linux
+        settings.MEDIA_ROOT = TEST_DIR
 
         author = create_author
         book = create_book
@@ -174,9 +155,9 @@ class TestUpdateBook:
         response = api_client.put(f"{book_url}{book.id}/", book_payload)
 
         book.refresh_from_db()
-        print(book.cover_image)
+
         author_name = book.author.all()
-        # author_name = author_name[0].name
+
         assert response.status_code == status.HTTP_200_OK
         assert author_name[0] == book_payload["author"]
         assert book.category == book_payload["category"]
@@ -191,11 +172,6 @@ class TestUpdateBook:
 
         # delete test image after the test is done
         shutil.rmtree(file_path)
-        # if using windows
-
-        # shutil.rmtree('books/tests/test_data/media/books/images/')
-
-        # if using docker or linux
 
 
 @pytest.mark.django_db()

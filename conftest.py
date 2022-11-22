@@ -84,7 +84,7 @@ def invalid_book_payload(db, create_book, create_author):
 
 
 @pytest.fixture()
-def author(db):
+def author_payload(db):
     author = {
         "id": 2,
         "name": "John Smith",
