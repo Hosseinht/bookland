@@ -43,7 +43,7 @@ def create_author(db, author_factory):
 
 @pytest.fixture()
 def create_book(db, book_factory):
-    create_book = book_factory.create(author=create_author)
+    create_book = book_factory.create()
     return create_book
 
 
@@ -51,9 +51,28 @@ def create_book(db, book_factory):
 def book_payload(db, create_book, create_author):
     author = create_author
     return {
+        "id": create_book.id,
         "author": author,
         "category": create_book.category,
         "title": "title",
+        "description": "description",
+        "price": create_book.price,
+        "publisher": "publisher",
+        "language": "English",
+        "pages": 120,
+        "isbn": create_book.isbn,
+        "cover_image": create_book.cover_image,
+    }
+
+
+@pytest.fixture()
+def invalid_book_payload(db, create_book, create_author):
+    author = create_author
+    return {
+        "id": create_book.id,
+        "author": author,
+        "category": create_book.category,
+        "title": "",
         "description": "description",
         "price": 32.32,
         "publisher": "publisher",

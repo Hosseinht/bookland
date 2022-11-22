@@ -27,7 +27,7 @@ class AuthorFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Author
 
-    name = factory.Sequence(lambda n: "cat_name%s" % n)
+    name = fake.first_name()
     pseudonym = fake.first_name()
     about = fake.sentence(nb_words=5)
 
@@ -39,7 +39,7 @@ class BookFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Book
 
-    author = factory.RelatedFactory(AuthorFactory)
+    # author = factory.RelatedFactory(AuthorFactory)
     category = factory.SubFactory(CategoryFactory)
     title = fake.text(max_nb_chars=5)
     description = fake.sentence(nb_words=5)
@@ -48,6 +48,17 @@ class BookFactory(factory.django.DjangoModelFactory):
     language = fake.language_name()
     pages = fake.random_int(min=2, max=4)
     isbn = 1234569874123
-    # cover_image = factory.django.ImageField(upload_to='test_data')
+
+    # cover_image = factory.django.ImageField(width=1024, height=768)
     cover_image = "books/example.jpg"
 
+    # @factory.post_generation
+    # def author(self, create, extracted, **kwargs):
+    #     if not create or not extracted:
+    #         # Simple build, do nothing.
+    #         return
+    #
+    #     if extracted:
+    #         # A list of groups were passed in, use them
+    #         for autho in extracted:
+    #             self.author.add(autho)
