@@ -27,14 +27,14 @@ class TestCreateBook:
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     def test_non_admin_user_can_not_create_book_return_403(
-            self, api_client, normal_user
+        self, api_client, normal_user
     ):
         response = api_client.post(book_url)
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_admin_can_create_book_return_200(
-            self, settings, api_client, admin_user, create_book, book_payload
+        self, settings, api_client, admin_user, create_book, book_payload
     ):
         settings.MEDIA_ROOT = TEST_DIR
 
@@ -46,7 +46,7 @@ class TestCreateBook:
         shutil.rmtree(file_path)
 
     def test_data_is_invalid_return_400(
-            self, settings, api_client, admin_user, invalid_book_payload
+        self, settings, api_client, admin_user, invalid_book_payload
     ):
         settings.MEDIA_ROOT = TEST_DIR
 
@@ -63,22 +63,22 @@ class TestRetrieveBook:
 
         assert response.status_code == status.HTTP_200_OK
 
-    def test_anonymous_user_can_see_a_single_books_return_200(
-            self, api_client, create_book
+    def test_anonymous_user_can_see_a_single_book_return_200(
+        self, api_client, create_book
     ):
         response = api_client.get(f"{book_url}{create_book.id}/")
 
         assert response.status_code == status.HTTP_200_OK
 
     def test_non_admin_user_can_see_list_of_books_return_200(
-            self, api_client, normal_user
+        self, api_client, normal_user
     ):
         response = api_client.get(book_url)
 
         assert response.status_code == status.HTTP_200_OK
 
-    def test_non_admin_user_can_see_a_single_books_return_200(
-            self, api_client, normal_user, create_book
+    def test_non_admin_user_can_see_a_single_book_return_200(
+        self, api_client, normal_user, create_book
     ):
         response = api_client.get(f"{book_url}{create_book.id}/")
 
@@ -90,14 +90,14 @@ class TestRetrieveBook:
         assert response.status_code == status.HTTP_200_OK
 
     def test_admin_user_can_see_a_single_books_return_200(
-            self, api_client, admin_user, create_book
+        self, api_client, admin_user, create_book
     ):
         response = api_client.get(f"{book_url}{create_book.id}/")
 
         assert response.status_code == status.HTTP_200_OK
 
     def test_if_book_exist_return_200(
-            self, api_client, admin_user, create_author, create_book
+        self, api_client, admin_user, create_author, create_book
     ):
         author = create_author
         book = create_book
@@ -120,22 +120,22 @@ class TestRetrieveBook:
         assert response.data["pages"] == book.pages
         assert response.data["isbn"] == book.isbn
         assert (
-                response.data["cover_image"]
-                == f"http://testserver/media/{book.cover_image}"
+            response.data["cover_image"]
+            == f"http://testserver/media/{book.cover_image}"
         )
 
 
 @pytest.mark.django_db()
 class TestUpdateBook:
     def test_anonymous_user_can_not_update_book_return_401(
-            self, api_client, create_book
+        self, api_client, create_book
     ):
         response = api_client.put(f"{book_url}{create_book.id}/")
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     def test_non_admin_user_can_not_update_book_return_401(
-            self, api_client, create_book, normal_user
+        self, api_client, create_book, normal_user
     ):
         response = api_client.put(f"{book_url}{create_book.id}/")
 
@@ -143,7 +143,7 @@ class TestUpdateBook:
 
     # @override_settings(MEDIA_ROOT=(TEST_DIR + "/media"))
     def test_admin_user_can_update_book_return_200(
-            self, settings, api_client, admin_user, create_book, create_author, book_payload
+        self, settings, api_client, admin_user, create_book, create_author, book_payload
     ):
         settings.MEDIA_ROOT = TEST_DIR
 
@@ -177,21 +177,21 @@ class TestUpdateBook:
 @pytest.mark.django_db()
 class TestDeleteBook:
     def test_anonymous_user_can_not_delete_book_return_401(
-            self, api_client, create_book
+        self, api_client, create_book
     ):
         response = api_client.delete(f"{book_url}{create_book.id}/")
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     def test_non_admin_user_can_not_delete_book_return_403(
-            self, api_client, normal_user, create_book
+        self, api_client, normal_user, create_book
     ):
         response = api_client.delete(f"{book_url}{create_book.id}/")
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_admin_user_can_delete_book_return_204(
-            self, api_client, admin_user, create_book
+        self, api_client, admin_user, create_book
     ):
         response = api_client.delete(f"{book_url}{create_book.id}/")
 
