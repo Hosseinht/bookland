@@ -28,7 +28,7 @@ class ProfileBookSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
-    user = serializers.CharField(source="user.username")
+    user = serializers.CharField(default="user.username", read_only=True)
     email = serializers.EmailField(source="user.email")
     first_name = serializers.CharField(source="user.first_name")
     last_name = serializers.CharField(source="user.last_name")
@@ -63,7 +63,7 @@ class ProfileDetailSerializer(serializers.ModelSerializer):
     This serializer is for displaying a user favorite books list
     """
 
-    user = serializers.CharField(source="user.username")
+    user = serializers.CharField(source="user.username", read_only=True)
     email = serializers.EmailField(source="user.email")
     first_name = serializers.CharField(source="user.first_name")
     last_name = serializers.CharField(source="user.last_name")
@@ -73,7 +73,8 @@ class ProfileDetailSerializer(serializers.ModelSerializer):
     def get_favorite_list(self, obj):
         # books = Book.objects.filter(favorite=obj.user.id)
         books = obj.user.favorite_books.all()
-        serializer = ProfileBookSerializer(books, many=True)
+        serializer = ProfileBookSerializer(books, many=True, context=self.context)
+        # context=self.context: to display the url of the image
         paginator = RelationPaginator()
         paginate_data = paginator.paginate_queryset(
             queryset=serializer.data, request=self.context["request"]

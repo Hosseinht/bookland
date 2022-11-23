@@ -108,17 +108,3 @@ def create_review(db, review_factory, user_factory):
     create_review = review_factory.create(user=user)
     return create_review
 
-# @pytest.fixture()
-# def invalid_book_payload(db,):
-#     book = factory.SubFactory(BookFactory)
-#     user = factory.SubFactory(UserFactory)
-#     description = fake.sentence(nb_words=5)
-#     rating = 5
-#     return {
-#         "id": 1,
-#         "book": author,
-#         "user": create_book.category,
-#         "description": "",
-#         "rating": "description",
-#
-#     }

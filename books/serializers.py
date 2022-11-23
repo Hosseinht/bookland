@@ -32,6 +32,12 @@ class AuthorBookSerializer(serializers.ModelSerializer):
         slug_field="name", queryset=Category.objects.all()
     )
 
+    # cover_image = serializers.SerializerMethodField()
+    #
+    # def get_cover_image(self,obj):
+    #     request = self.context.get('request')
+    #     print(request)
+    #     str(request.build_absolute_uri(obj.cover_image.url))
     class Meta:
         model = Book
         fields = [
@@ -52,8 +58,9 @@ class AuthorDetailSerializer(serializers.ModelSerializer):
 
     def get_books(self, obj):
         author_pk = self.context["author_id"]
+
         books = Book.objects.select_related("category").filter(author=author_pk)
-        serializer = AuthorBookSerializer(books, many=True)
+        serializer = AuthorBookSerializer(books, many=True,context=self.context)
         paginator = RelationPaginator()
         paginated_data = paginator.paginate_queryset(
             queryset=serializer.data, request=self.context["request"]

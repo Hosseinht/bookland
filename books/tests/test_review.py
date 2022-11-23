@@ -115,7 +115,7 @@ class TestUpdateReview:
         self, api_client, create_book, user_factory, review_factory
     ):
         user = user_factory.create(is_active=True)
-        create_review = review_factory.create(user=user)
+        create_review = review_factory.create(user=user, book=create_book)
         response = api_client.put(
             f"{book_url}{create_book.id}/reviews/{create_review.id}/"
         )
