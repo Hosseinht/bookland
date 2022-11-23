@@ -4,12 +4,13 @@ from pytest_factoryboy import register
 from rest_framework.test import APIClient
 
 from books.tests.factories import (AuthorFactory, BookFactory, CategoryFactory,
-                                   UserFactory)
+                                   UserFactory, ReviewFactory)
 
 register(UserFactory)
 register(AuthorFactory)
 register(CategoryFactory)
 register(BookFactory)
+register(ReviewFactory)
 
 User = get_user_model()
 
@@ -99,3 +100,25 @@ def author_payload(db):
 def create_author(db, author_factory):
     create_author = author_factory.create()
     return create_author
+
+
+@pytest.fixture()
+def create_review(db, review_factory, user_factory):
+    user = user_factory.create(is_active=True)
+    create_review = review_factory.create(user=user)
+    return create_review
+
+# @pytest.fixture()
+# def invalid_book_payload(db,):
+#     book = factory.SubFactory(BookFactory)
+#     user = factory.SubFactory(UserFactory)
+#     description = fake.sentence(nb_words=5)
+#     rating = 5
+#     return {
+#         "id": 1,
+#         "book": author,
+#         "user": create_book.category,
+#         "description": "",
+#         "rating": "description",
+#
+#     }

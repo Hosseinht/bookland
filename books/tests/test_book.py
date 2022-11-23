@@ -21,7 +21,7 @@ TEST_DIR = os.path.join(path, "books/tests/test_data/media/")
 
 @pytest.mark.django_db()
 class TestCreateBook:
-    def test_anonymous_can_not_create_book_return_401(self, api_client):
+    def test_anonymous_user_can_not_create_book_return_401(self, api_client):
         response = api_client.post(book_url)
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
@@ -34,7 +34,7 @@ class TestCreateBook:
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_admin_can_create_book_return_200(
-        self, settings, api_client, admin_user, create_book, book_payload
+        self, settings, api_client, admin_user, book_payload
     ):
         settings.MEDIA_ROOT = TEST_DIR
 

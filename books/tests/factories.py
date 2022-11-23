@@ -2,7 +2,7 @@ import factory.django
 import factory.fuzzy
 from faker import Faker
 
-from books.models import Author, Book, Category
+from books.models import Author, Book, Category, Review
 from users.models import User
 
 fake = Faker()
@@ -52,13 +52,12 @@ class BookFactory(factory.django.DjangoModelFactory):
     # cover_image = factory.django.ImageField(width=1024, height=768)
     cover_image = "books/example.jpg"
 
-    # @factory.post_generation
-    # def author(self, create, extracted, **kwargs):
-    #     if not create or not extracted:
-    #         # Simple build, do nothing.
-    #         return
-    #
-    #     if extracted:
-    #         # A list of groups were passed in, use them
-    #         for autho in extracted:
-    #             self.author.add(autho)
+
+class ReviewFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Review
+
+    # book = factory.SubFactory(BookFactory)
+    # user = factory.SubFactory(UserFactory)
+    description = fake.sentence(nb_words=5)
+    rating = 5
