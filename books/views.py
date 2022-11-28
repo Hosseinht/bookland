@@ -1,3 +1,4 @@
+from django.contrib.postgres.search import SearchVector
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
@@ -25,6 +26,7 @@ from .serializers import (
     BookSerializer,
     ReviewSerializer,
     CategorySerializer,
+    BookSearchSerializer,
 )
 
 
@@ -57,22 +59,36 @@ class CategoryViewSet(ModelViewSet):
 
 class BookViewSet(ModelViewSet):
     queryset = Book.objects.annotate(average_rating=Avg("reviews__rating")).order_by('-created_at')
-    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_class = BookFilter
-    search_fields = ["title", "description"]
     ordering_fields = ["name", "price", "pages"]
     permission_classes = [IsAdminUserOrReadOnly]
+
+    def get_queryset(self):
+        query = self.request.query_params.get("search", None)
+
+        if query:
+            # books = Book.objects.filter(title__search=query)
+
+            books = Book.objects.annotate(
+                search=SearchVector("title", "author__name"),
+            ).filter(search=query)
+
+            return books
+        else:
+            return self.queryset
 
     def get_serializer_context(self):
 
         return {"book_id": self.kwargs.get("pk"), "request": self.request}
 
     def get_serializer_class(self):
-        if self.action == "list":
+        if "search" in self.request.query_params:
+            return BookSearchSerializer
+        elif self.action == "list":
             return BookSerializer
         elif self.action == "create":
             return BookCreateSerializer
-
         else:
             return BookDetailSerializer
 
@@ -129,25 +145,3 @@ class ReviewViewSet(ModelViewSet):
     def get_serializer_context(self):
         return {"book_id": self.kwargs["book_pk"], "user": self.request.user}
 
-
-# class BookFavoriteViewSet(APIView):
-#       """
-#           another approach to add a book to favorite list
-#           urlpatterns = [
-#                   path('books/<int:pk>/favorite/', views.BookFavoriteViewSet.as_view()),
-#               ]
-#       """
-#
-#     bad_request_message = 'An error has occurred'
-#
-#     def post(self, request, pk):
-#         book = get_object_or_404(Book, pk=pk)
-#         user = request.user
-#         if user not in book.favorite.all():
-#             book.favorite.add(user)
-#             return Response({'detail': 'Added to favorite list'}, status=status.HTTP_200_OK)
-#         elif user in book.favorite.all():
-#             book.favorite.remove(user)
-#             return Response({'detail': 'Removed from favorite list'}, status=status.HTTP_200_OK)
-#         else:
-#             Response({'detail': self.bad_request_message}, status=status.HTTP_400_BAD_REQUEST)

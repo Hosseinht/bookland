@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.postgres.indexes import GinIndex
 from django.core.validators import MaxLengthValidator
 from django.db import models
 
@@ -29,14 +30,14 @@ class Category(models.Model):
 class Book(models.Model):
     author = models.ManyToManyField(Author, related_name='books')
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
-    title = models.CharField(max_length=200)
+    title = models.CharField(max_length=1000)
     description = models.TextField(max_length=3000)
     price = models.DecimalField(max_digits=6, decimal_places=2)
-    publisher = models.CharField(max_length=200)
+    publisher = models.CharField(max_length=1000)
     language = models.CharField(max_length=200)
     pages = models.PositiveSmallIntegerField()
     isbn = models.CharField(max_length=13, validators=[validate_isbn(), MaxLengthValidator(13)])
-    cover_image = models.ImageField(upload_to='books/images')
+    cover_image = models.ImageField(upload_to='books/images', null=True)
     publish = models.BooleanField(default=True)
     favorite = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='favorite_books', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -62,7 +63,7 @@ class Review(models.Model):
     description = models.TextField()
     rating = models.PositiveSmallIntegerField(choices=RATING, default=5)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at= models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     objects = ReviewManager()
 

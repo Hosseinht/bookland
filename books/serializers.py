@@ -60,7 +60,7 @@ class AuthorDetailSerializer(serializers.ModelSerializer):
         author_pk = self.context["author_id"]
 
         books = Book.objects.select_related("category").filter(author=author_pk)
-        serializer = AuthorBookSerializer(books, many=True,context=self.context)
+        serializer = AuthorBookSerializer(books, many=True, context=self.context)
         paginator = RelationPaginator()
         paginated_data = paginator.paginate_queryset(
             queryset=serializer.data, request=self.context["request"]
@@ -239,3 +239,28 @@ class BookDetailSerializer(serializers.ModelSerializer):
         if self.context["request"].get_full_path() == f"{book_url}add_to_favorite/":
             for field in self.fields:
                 self.fields[field].read_only = True
+
+
+class BookSearchSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        slug_field="name", many=True, queryset=Author.objects.all()
+    )
+    category = serializers.SlugRelatedField(
+        slug_field="name", queryset=Category.objects.all())
+
+    class Meta:
+        model = Book
+        fields = [
+            "id",
+            "author",
+            "category",
+            "title",
+            "description",
+            "price",
+            "publisher",
+            "language",
+            "pages",
+            "isbn",
+            "cover_image",
+
+        ]
