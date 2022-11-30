@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "debug_toolbar",
     'django_cleanup.apps.CleanupConfig',
     "django.contrib.postgres",
+    'drf_yasg',
 
     # local apps
     'books',
@@ -118,19 +119,6 @@ DATABASES = {
 #         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
-
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'NAME': 'booklan',
-#         'USER': 'postgres',
-#         'PASSWORD': 'D!G!kala',
-#         'HOST': 'localhost',
-#         'PORT': 5432
-#     }
-# }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
