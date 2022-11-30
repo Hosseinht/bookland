@@ -8,30 +8,29 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import (
     IsAdminUser,
-    IsAuthenticatedOrReadOnly,
     IsAuthenticated,
+    IsAuthenticatedOrReadOnly,
 )
 from rest_framework.response import Response
-
 from rest_framework.viewsets import ModelViewSet
 
 from .filters import BookFilter
-from .models import Author, Book, Review, Category
-from .permissions import IsReviewUserOrReadOnly, IsAdminUserOrReadOnly
+from .models import Author, Book, Category, Review
+from .permissions import IsAdminUserOrReadOnly, IsReviewUserOrReadOnly
 from .serializers import (
-    AuthorListSerializer,
     AuthorDetailSerializer,
+    AuthorListSerializer,
     BookCreateSerializer,
     BookDetailSerializer,
-    BookSerializer,
-    ReviewSerializer,
-    CategorySerializer,
     BookSearchSerializer,
+    BookSerializer,
+    CategorySerializer,
+    ReviewSerializer,
 )
 
 
 class AuthorViewSet(ModelViewSet):
-    queryset = Author.objects.all().order_by('id')
+    queryset = Author.objects.all().order_by("id")
     pagination_class = PageNumberPagination
     permission_classes = [IsAdminUserOrReadOnly]
     filter_backends = [SearchFilter, OrderingFilter]
@@ -49,7 +48,7 @@ class AuthorViewSet(ModelViewSet):
 
 
 class CategoryViewSet(ModelViewSet):
-    queryset = Category.objects.all().order_by('id')
+    queryset = Category.objects.all().order_by("id")
     serializer_class = CategorySerializer
     permission_classes = [IsAdminUser]
 
@@ -58,23 +57,25 @@ class CategoryViewSet(ModelViewSet):
 
 
 class BookViewSet(ModelViewSet):
-    queryset = Book.objects.annotate(average_rating=Avg("reviews__rating")).order_by('-created_at')
+    queryset = Book.objects.annotate(average_rating=Avg("reviews__rating")).order_by(
+        "-created_at"
+    )
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_class = BookFilter
-    ordering_fields = ["name", "price", "pages"]
+    ordering_fields = ["id", "name", "price", "pages"]
     permission_classes = [IsAdminUserOrReadOnly]
 
     def get_queryset(self):
         query = self.request.query_params.get("search", None)
 
         if query:
-            # books = Book.objects.filter(title__search=query)
 
             books = Book.objects.annotate(
-                search=SearchVector("title", "author__name"),
+                search=SearchVector("title"),
             ).filter(search=query)
 
             return books
+
         else:
             return self.queryset
 
@@ -144,4 +145,3 @@ class ReviewViewSet(ModelViewSet):
 
     def get_serializer_context(self):
         return {"book_id": self.kwargs["book_pk"], "user": self.request.user}
-

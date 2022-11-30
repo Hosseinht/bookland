@@ -11,18 +11,24 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 from datetime import timedelta
 from pathlib import Path
+import environ
 
+env = environ.Env(
+    # set casting, default value
+    DEBUG=(bool, True)
+)
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+environ.Env.read_env(BASE_DIR / '.env')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-#j%vlcj(6f0zgoc3^eev9*k&v362ejvxk8m*(4g*%t5potz6#h'
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env("DEBUG")
 
 ALLOWED_HOSTS = []
 
@@ -43,6 +49,7 @@ INSTALLED_APPS = [
     'corsheaders',
     "debug_toolbar",
     'django_cleanup.apps.CleanupConfig',
+    "django.contrib.postgres",
 
     # local apps
     'books',
@@ -201,4 +208,37 @@ SIMPLE_JWT = {
 
 DEBUG_TOOLBAR_CONFIG = {
     'SHOW_TOOLBAR_CALLBACK': lambda request: True
+}
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "console": {
+            "format": "{asctime} | {levelname} | {name} | {message}",
+            "style": "{",
+        },
+        "verbose": {
+            "format": "{asctime} | {levelname} | {name} | {module} | {process:d} | {thread:d} | {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "console"
+        },
+        "file": {
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "filename": "app.log",
+            "formatter": "verbose",
+        }
+    },
+    "loggers": {
+        "": {
+            "level": "INFO",
+            "handlers": ["file", "console", ]
+        }
+    }
 }

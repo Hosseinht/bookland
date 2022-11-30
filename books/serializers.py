@@ -161,7 +161,6 @@ class BookCreateSerializer(serializers.ModelSerializer):
             "language",
             "pages",
             "isbn",
-            "publish",
             "cover_image",
         ]
 
